@@ -25,6 +25,16 @@ for %%p in (Win32 x64) do (
 
 	echo build.cmd: Building !CONFIGURATION! ^| !PLATFORM!
 
+	rem For some inane reason, the MSBuild on AppVeyor machines
+	rem fails to configure the library search path for x64 builds.
+	rem This results in errors such as:
+	rem LINK : fatal error LNK1181: cannot open input file 'comctl32.lib'
+	rem For an example build that fails in this manner, see:
+	rem https://ci.appveyor.com/project/CyberShadow/verysleepy/build/1.0.10
+	rem As a workaround, call SetEnv manually before invoking MSBuild.
+	if defined APPVEYOR if !PLATFORM! == Win32 call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /!CONFIGURATION! /x86
+	if defined APPVEYOR if !PLATFORM! == x64   call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /!CONFIGURATION! /x64
+
 	"%MSBUILD%" /p:Configuration="!CONFIGURATION! - Wow64" /p:Platform=!PLATFORM! sleepy.sln
 	if errorlevel 1 exit /b 1
 

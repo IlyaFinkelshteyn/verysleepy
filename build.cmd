@@ -25,6 +25,9 @@ for %%p in (Win32 x64) do (
 
 	echo build.cmd: Building !CONFIGURATION! ^| !PLATFORM!
 
+	rem TODO
+	if defined APPVEYOR set PATH=!WinDir!\System32
+
 	rem For some inane reason, the MSBuild on AppVeyor machines
 	rem fails to configure the library search path for x64 builds.
 	rem This results in errors such as:
@@ -34,6 +37,8 @@ for %%p in (Win32 x64) do (
 	rem As a workaround, call SetEnv manually before invoking MSBuild.
 	if defined APPVEYOR if !PLATFORM! == Win32 call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /!CONFIGURATION! /x86
 	if defined APPVEYOR if !PLATFORM! == x64   call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /!CONFIGURATION! /x64
+	::if defined APPVEYOR if !PLATFORM! == Win32 call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86
+	::if defined APPVEYOR if !PLATFORM! == x64   call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" amd64
 
 	"%MSBUILD%" /p:Configuration="!CONFIGURATION! - Wow64" /p:Platform=!PLATFORM! sleepy.sln
 	if errorlevel 1 exit /b 1
